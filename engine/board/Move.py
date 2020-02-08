@@ -20,15 +20,6 @@ class Move(ABC):
         result = 31 * result + self.movedPiece.__hash__()
         return result
 
-    def __eq__(self, other):
-        if not isinstance(other, Move):
-            return False
-        return self.currentCoordinate == other.currentCoordinate \
-               and self.destinationCoordinate == other.destinationCoordinate and self.movedPiece == other.movedPiece
-
-    def __ne__(self, other):
-        return not self == other
-
     @property
     def destinationCoordinate(self):
         return self._destinationCoordinate
@@ -94,6 +85,7 @@ class AttackMove(Move):
     def attackedPiece(self):
         return self._attackedPiece
 
+    @property
     def isAttack(self):
         return True
 

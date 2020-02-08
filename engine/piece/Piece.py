@@ -21,7 +21,7 @@ class Piece(ABC):
         if not isinstance(other, Piece):
             return False
         return self.piecePosition == other.piecePosition and self.pieceAlliance == other.pieceAlliance \
-               and self.isFirstMove == other.isFirstMove and self.pieceType == other.pieceType
+                and self.pieceType == other.pieceType
 
     def __ne__(self, other):
         return not self == other
@@ -31,7 +31,6 @@ class Piece(ABC):
 
     def __str__(self):
         return self.pieceType.value
-
 
     def computeHashCode(self):
         result = self.pieceType.__hash__()

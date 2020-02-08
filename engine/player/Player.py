@@ -3,7 +3,7 @@ from typing import List
 
 from engine.board.MoveTransition import MoveTransition
 from engine.board.Move import MoveStatus
-
+from engine.player import Alliance
 
 
 class Player(ABC):
@@ -59,7 +59,7 @@ class Player(ABC):
         pass
 
     @abstractmethod
-    def alliance(self):
+    def alliance(self) -> Alliance.Alliance:
         pass
 
     @property

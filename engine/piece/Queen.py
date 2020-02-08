@@ -21,12 +21,14 @@ class Queen(Piece):
         for candidOffset in self._moves:
             candidDestination: int = self.piecePosition
 
-            while BoardUtils.isValidTileCoordinate(candidDestination):
-                candidDestination += candidOffset
+            while True:
                 if self.firstColumnExclusion(candidDestination, candidOffset) or\
                         self.eightColumnExclusion(candidDestination, candidOffset):
                     break
-                if BoardUtils.isValidTileCoordinate(candidDestination):
+                candidDestination += candidOffset
+                if not BoardUtils.isValidTileCoordinate(candidDestination):
+                    break
+                else:
                     candidTile = board.tile(candidDestination)
                     if not candidTile.isTileOccupied():
                         legalMoves.append(MajorMove(board, self, candidDestination))
@@ -41,7 +43,7 @@ class Queen(Piece):
 
     @staticmethod
     def firstColumnExclusion(coordinate, future) -> bool:
-        return BoardUtils.inFourColumn(coordinate) and (future == -9 or future == -1 or future == 7)
+        return BoardUtils.inFirstColumn(coordinate) and (future == -9 or future == -1 or future == 7)
 
     @staticmethod
     def eightColumnExclusion(coordinate, future) -> bool:

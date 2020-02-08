@@ -70,6 +70,14 @@ def getCoordinateAtPosition(pos) -> int:
     return _position.get(pos)
 
 
+def isEndGame(board):
+    return board.currentPlayer.isInCheckMate or board.currentPlayer.isInStaleMate
+
+
+def isThreatenedBoardImmediate(board) -> bool:
+    return board.whitePlayer.isInCheck or board.blackPlayer.isInCheck
+
+
 def getPositionAtCoordinate(coordinate) -> str:
     return _algebraic[coordinate]
 

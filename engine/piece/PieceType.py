@@ -16,7 +16,7 @@ class PieceType(Enum):
             self.BISHOP: 320,
             self.ROOK: 500,
             self.QUEEN: 900,
-            self.KING:20000
+            self.KING: 20000
         }.get(self)
 
     def isRook(self):
@@ -35,6 +35,16 @@ class PieceType(Enum):
             self.KNIGHT: False,
             self.KING: True,
             self.BISHOP: False,
+            self.ROOK: False,
+            self.QUEEN: False,
+        }.get(self)
+
+    def isBishop(self):
+        return {
+            self.PAWN: False,
+            self.KNIGHT: False,
+            self.KING: False,
+            self.BISHOP: True,
             self.ROOK: False,
             self.QUEEN: False,
         }.get(self)
