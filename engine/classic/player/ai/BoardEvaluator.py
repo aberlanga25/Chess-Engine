@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from engine.board import Board
+from engine.classic.board import Board
 
 
 class BoardEvaluator(ABC):

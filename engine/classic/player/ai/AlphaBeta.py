@@ -1,9 +1,9 @@
-from engine.player.ai.MoveStrategy import MoveStrategy
-from engine.board import Board, Move, MoveTransition
-from engine.board.BoardUtils import *
-from engine.board.Move import nullMove
-from engine.board.MoveUtils import MoveSorter
-from engine.player.ai.StandardBoardEvaluator import StandardBoardEvaluator
+from engine.classic.player.ai.MoveStrategy import MoveStrategy
+from engine.classic.board import MoveTransition, Board, Move
+from engine.classic.board.BoardUtils import *
+from engine.classic.board.Move import nullMove
+from engine.classic.board.MoveUtils import MoveSorter
+from engine.classic.player.ai.StandardBoardEvaluator import StandardBoardEvaluator
 
 from typing import *
 
@@ -53,9 +53,6 @@ class AlphaBeta(MoveStrategy):
                 elif alliance.isBlack() and currentValue < lowestSeenValue:
                     lowestSeenValue = currentValue
                     bestMove = move
-            #quiescenceInfo = " [h: " +str(highestSeenValue)+ " l: " +str(lowestSeenValue)+ "] q: " +str(self.quiesceCount)
-            #s = str(self) + "(" +str(self.depth)+ "), m: (" +str(moveCounter)+ "/" +str(numMoves)+ ") " + str(move) + ", best:  " + str(bestMove) + quiescenceInfo
-            #print(s)
             moveCounter += 1
         return bestMove
 

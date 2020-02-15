@@ -1,13 +1,13 @@
 from unittest import TestCase
 
-from engine.board.Board import createStandardBoard, BoardBuilder
-from engine.board.Move import MoveFactory
-from engine.board.BoardUtils import *
-from engine.piece.King import King
-from engine.piece.Rook import Rook
-from engine.piece.Bishop import Bishop
-from engine.player.Alliance import Alliance
-from engine.player.ai.StandardBoardEvaluator import StandardBoardEvaluator
+from engine.classic.board.Board import createStandardBoard, BoardBuilder
+from engine.classic.board.Move import MoveFactory
+from engine.classic.board.BoardUtils import *
+from engine.classic.piece.King import King
+from engine.classic.piece.Rook import Rook
+from engine.classic.piece.Bishop import Bishop
+from engine.classic.player.Alliance import Alliance
+from engine.classic.player.ai.StandardBoardEvaluator import StandardBoardEvaluator
 
 
 class TestPlayer(TestCase):

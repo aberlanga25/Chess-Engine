@@ -1,9 +1,7 @@
-from engine.player.ai.BoardEvaluator import BoardEvaluator
-from engine.board import Board
-from engine.player import Player
-from engine.piece import Piece
-
-from typing import *
+from engine.classic.player.ai.BoardEvaluator import BoardEvaluator
+from engine.classic.board import Board
+from engine.classic.player import Player
+from engine.classic.piece import Piece
 
 
 class StandardBoardEvaluator(BoardEvaluator):
@@ -11,7 +9,7 @@ class StandardBoardEvaluator(BoardEvaluator):
     def evaluate(self, board: Board.Board, depth: int) -> int:
         return self.scorePlayer(board.whitePlayer, depth) - self.scorePlayer(board.blackPlayer, depth)
 
-    def scorePlayer(self,player: Player.Player, depth: int) -> int:
+    def scorePlayer(self, player: Player.Player, depth: int) -> int:
         return self.pieceValue(player) + self.attacks(player) + self.check(player) + self.checkMate(player, depth) + self.castled(player) +self.mobility(player)
 
     @staticmethod

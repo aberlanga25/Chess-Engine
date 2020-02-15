@@ -1,14 +1,14 @@
 from typing import final, Final
 from abc import ABC, abstractmethod
-from immutablecollections import ImmutableDict
-from engine.piece.Piece import Piece
+#from immutablecollections import ImmutableDict
+from engine.classic.piece.Piece import Piece
 
 
 def _createAllEmptyTiles() -> dict:
     emptyTile = {}
     for i in range(64):
         emptyTile[i] = EmptyTile(i)
-    return ImmutableDict.of(emptyTile)
+    return emptyTile
 
 
 class _Tile(ABC):

@@ -1,6 +1,6 @@
-from engine.player.Alliance import Alliance
-from engine.player.Player import Player
-from engine.board.Move import QueenSideCastleMove, KingSideCastleMove
+from engine.classic.player.Alliance import Alliance
+from engine.classic.player.Player import Player
+from engine.classic.board.Move import QueenSideCastleMove, KingSideCastleMove
 
 class BlackPlayer(Player):
     def __init__(self, board, white, black):

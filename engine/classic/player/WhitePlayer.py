@@ -1,7 +1,7 @@
-from engine.player.Alliance import Alliance
-from engine.player.Player import Player
-from engine.board import Tile
-from engine.board.Move import KingSideCastleMove, QueenSideCastleMove
+from engine.classic.player.Alliance import Alliance
+from engine.classic.player.Player import Player
+from engine.classic.board import Tile
+from engine.classic.board.Move import KingSideCastleMove, QueenSideCastleMove
 
 
 class WhitePlayer(Player):

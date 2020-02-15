@@ -1,8 +1,7 @@
-from engine.player.ai.MoveStrategy import MoveStrategy
-from engine.player.ai.StandardBoardEvaluator import StandardBoardEvaluator
-from engine.board import Board
-from engine.board import Move, MoveTransition
-from engine.board.BoardUtils import *
+from engine.classic.player.ai.MoveStrategy import MoveStrategy
+from engine.classic.player.ai.StandardBoardEvaluator import StandardBoardEvaluator
+from engine.classic.board import MoveTransition, Board, Move
+from engine.classic.board.BoardUtils import *
 
 from typing import *
 from time import time

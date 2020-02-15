@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-from engine.board import Board
-from engine.board import Move
+from engine.classic.board import Board, Move
 
 
 class MoveStrategy(ABC):

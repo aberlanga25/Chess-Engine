@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from engine.board.MoveTransition import MoveTransition
-from engine.board.Move import MoveStatus
-from engine.player import Alliance
+from engine.classic.board.MoveTransition import MoveTransition
+from engine.classic.board.Move import MoveStatus
+from engine.classic.player import Alliance
 
 
 class Player(ABC):
@@ -58,6 +58,7 @@ class Player(ABC):
     def activePieces(self) -> List:
         pass
 
+    @property
     @abstractmethod
     def alliance(self) -> Alliance.Alliance:
         pass

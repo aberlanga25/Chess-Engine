@@ -1,5 +1,5 @@
-from engine.player.Alliance import Alliance
-from engine.piece.PieceType import PieceType
+from engine.classic.player.Alliance import Alliance
+from engine.classic.piece.PieceType import PieceType
 
 from abc import ABC, abstractmethod
 from typing import List

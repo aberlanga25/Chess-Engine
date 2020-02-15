@@ -1,10 +1,12 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPixmap, QImage
+from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt, pyqtSignal, QRect
 
-from engine.board.BoardUtils import *
-from engine.board import Board
-from engine.board.Move import MoveFactory
+from engine.classic.board.BoardUtils import *
+from engine.classic.board import Board
+from engine.classic.board.Move import MoveFactory
+
+from pgn.FenUtils import createGameFromFen, createFENFromGame
 
 from gui.TableUtils import BoardDirection
 from gui.TakenPieces import TakenPieces
@@ -52,6 +54,8 @@ class Table(QMainWindow):
         fileMenu = menuBar.addMenu('File')
         pgnAct = QAction('Import PGN', self)
         pgnAct.triggered.connect(lambda: print("Import PGN"))
+        fenAct = QAction('Import FEN', self)
+        fenAct.triggered.connect(self._fenOpener)
         exitAct = QAction("Exit", self)
         exitAct.triggered.connect(qApp.exit)
 
@@ -64,8 +68,19 @@ class Table(QMainWindow):
 
         prefMenu.addAction(flipAct)
         prefMenu.addAction(highlightAct)
+
         fileMenu.addAction(pgnAct)
+        fileMenu.addAction(fenAct)
         fileMenu.addAction(exitAct)
+
+    def _fenOpener(self):
+        text, okPressed = QInputDialog.getText(self, "Get FEN game", "Insert FEN String:", QLineEdit.Normal, "")
+        if okPressed and text != '':
+            chessBrd = createGameFromFen(text)
+            self.boardPanel.drawBoard(chessBrd)
+
+    def _createFEN(self):
+        text = createFENFromGame(self.boardPanel.b)
 
     def _flipBoard(self):
         global _boardDirection
@@ -214,7 +229,6 @@ class Table(QMainWindow):
                     Table.destinationTile = None
                     Table.sourceTile = None
                     Table.humanPiece = None
-                    #print(_chessboard)
             self.clicked.emit()
 
 

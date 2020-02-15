@@ -1,8 +1,8 @@
-from engine.piece.Piece import Piece
-from engine.piece.Queen import Queen
-from engine.board import BoardUtils
-from engine.board.Move import PawnMove, PawnJump, PawnAttackMove, PawnEnPassant, PawnPromotion
-from engine.piece.PieceType import PieceType
+from engine.classic.piece.Piece import Piece
+from engine.classic.piece.Queen import Queen
+from engine.classic.board import BoardUtils
+from engine.classic.board.Move import PawnMove, PawnJump, PawnAttackMove, PawnEnPassant, PawnPromotion
+from engine.classic.piece.PieceType import PieceType
 
 from typing import List
 

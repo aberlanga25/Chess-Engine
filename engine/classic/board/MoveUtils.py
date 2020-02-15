@@ -1,4 +1,4 @@
-from engine.board.BoardUtils import *
+from engine.classic.board.BoardUtils import *
 
 
 def getBoard(Move):

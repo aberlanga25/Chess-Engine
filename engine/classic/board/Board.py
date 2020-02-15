@@ -1,38 +1,50 @@
 from typing import *
 
-from engine.player.Alliance import Alliance
-from engine.player.BlackPlayer import BlackPlayer
-from engine.player.WhitePlayer import WhitePlayer
-from engine.player import Player
-from engine.board.Tile import createTile, _Tile
-from engine.piece.Pawn import Pawn
-from engine.piece.King import King
-from engine.piece.Bishop import Bishop
-from engine.piece.Knight import Knight
-from engine.piece.Rook import Rook
-from engine.piece.Queen import Queen
+import numpy as np
+
+from engine.classic.player.Alliance import Alliance
+from engine.classic.player.BlackPlayer import BlackPlayer
+from engine.classic.player.WhitePlayer import WhitePlayer
+from engine.classic.player import Player
+from engine.classic.board.Tile import createTile, _Tile
+from engine.classic.piece.Pawn import Pawn
+from engine.classic.piece.King import King
+from engine.classic.piece.Bishop import Bishop
+from engine.classic.piece.Knight import Knight
+from engine.classic.piece.Rook import Rook
+from engine.classic.piece.Queen import Queen
+from engine.classic.piece.Piece import Piece
+from engine.classic.board import Move
 
 
 class BoardBuilder:
 
+    moveMaker: Alliance
+    enpassantPawn: Pawn
+    transitionMove: Move.Move
+
     def __init__(self):
         self.boardConfig = {}
-        self.moveMaker: Alliance = Alliance.White
-        self.enpassantPawn = None
+        self.enpassantPawn: Pawn = None
 
-    def setPiece(self, piece):
+    def setPiece(self, piece: Piece) -> "BoardBuilder":
         self.boardConfig[piece.piecePosition] = piece
         return self
 
-    def setMoveMaker(self, nextMoveMaker):
+    def setMoveMaker(self, nextMoveMaker: Alliance) -> "BoardBuilder":
         self.moveMaker = nextMoveMaker
         return self
 
-    def build(self):
+    def build(self) -> "Board":
         return Board(self)
 
-    def setEnPassantPawn(self, movedPawn):
+    def setMoveTransition(self, transitionMove: Move) -> "BoardBuilder":
+        self.transitionMove = transitionMove
+        return self
+
+    def setEnPassantPawn(self, movedPawn: Pawn) -> "BoardBuilder":
         self.enpassantPawn = movedPawn
+        return self
 
 
 @final

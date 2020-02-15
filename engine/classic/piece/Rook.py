@@ -1,9 +1,8 @@
-from engine.board import BoardUtils
-from engine.board import Move
-from engine.piece.Piece import Piece
+from engine.classic.board import BoardUtils, Move
+from engine.classic.piece.Piece import Piece
 from typing import List
 
-from engine.piece.PieceType import PieceType
+from engine.classic.piece.PieceType import PieceType
 
 
 class Rook(Piece):

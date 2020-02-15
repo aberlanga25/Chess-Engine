@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPixmap
 
-from engine.piece.PieceType import getValue
+from engine.classic.piece.PieceType import getValue
 
 
 class TakenPieces(QWidget):

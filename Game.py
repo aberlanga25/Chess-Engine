@@ -1,4 +1,4 @@
-from engine.board.Board import createStandardBoard
+from engine.classic.board.Board import createStandardBoard
 from gui.Table import Table
 
 from PyQt5.QtWidgets import QApplication
@@ -9,7 +9,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     board = createStandardBoard()
-    #print(board)
+    print(board)
 
     table = Table()
     sys.exit(app.exec_())

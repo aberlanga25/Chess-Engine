@@ -1,9 +1,9 @@
 from abc import ABC
 from enum import Enum
 
-from engine.board import Board
-from engine.piece import Piece, Rook
-from engine.board.BoardUtils import *
+from engine.classic.board import Board
+from engine.classic.piece import Rook, Piece
+from engine.classic.board.BoardUtils import *
 
 
 class Move(ABC):
@@ -157,6 +157,7 @@ class CastleMove(Move):
     def castleRook(self):
         return self._castleRook
 
+    @property
     def isCastling(self):
         return True
 
@@ -193,7 +194,7 @@ class QueenSideCastleMove(CastleMove):
         return "O-O-O"
 
 
-class PawnPromotion(Move):
+class PawnPromotion(PawnMove):
     def __init__(self, move):
         super().__init__(move.board, move.movedPiece, move.destinationCoordinate)
         self.decoratedMove = move
@@ -221,8 +222,9 @@ class PawnPromotion(Move):
         builder.setMoveMaker(pawnMoveBoard.currentPlayer.alliance)
         return builder.build()
 
+    @property
     def isAttack(self):
-        return self.decoratedMove.isAttack()
+        return self.decoratedMove.isAttack
 
     @property
     def attackedPiece(self):

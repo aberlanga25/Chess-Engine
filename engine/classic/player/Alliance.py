@@ -1,6 +1,6 @@
 from enum import Enum
 
-from engine.board.BoardUtils import *
+from engine.classic.board.BoardUtils import *
 
 
 class Alliance(Enum):
