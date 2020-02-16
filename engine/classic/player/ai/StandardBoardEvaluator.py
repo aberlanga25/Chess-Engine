@@ -3,14 +3,17 @@ from engine.classic.board import Board
 from engine.classic.player import Player
 from engine.classic.piece import Piece
 
+import random
+
 
 class StandardBoardEvaluator(BoardEvaluator):
 
     def evaluate(self, board: Board.Board, depth: int) -> int:
+        #return random.randrange(-100, 100)
         return self.scorePlayer(board.whitePlayer, depth) - self.scorePlayer(board.blackPlayer, depth)
 
     def scorePlayer(self, player: Player.Player, depth: int) -> int:
-        return self.pieceValue(player) + self.attacks(player) + self.check(player) + self.checkMate(player, depth) + self.castled(player) +self.mobility(player)
+        return self.pieceValue(player) + self.check(player) + self.checkMate(player, depth)
 
     @staticmethod
     def mobility(player: Player.Player) -> int:

@@ -53,7 +53,8 @@ class Board(object):
     whitePieces: list
     blackPieces: list
 
-    def __init__(self, builder):
+    def __init__(self, builder: BoardBuilder):
+
         self._gameboard = self.createGameBoard(builder)
         self.whitePieces = self.calculateActivePieces(self._gameboard, Alliance.White)
         self.blackPieces = self.calculateActivePieces(self._gameboard, Alliance.Black)

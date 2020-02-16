@@ -23,15 +23,10 @@ class MinMax(MoveStrategy):
         return self._boardsEvaluated
 
     def execute(self, board: Board.Board) -> Move.Move:
-        startTime: float = time()
         bestMove: Move.Move = Move.nullMove
         highestSeenValue = float('-inf')
         lowestSeenValue = float('inf')
-
         print(str(board.currentPlayer) + " Thinking with Depth = " + str(self.depth))
-
-        self.freqtable = []
-        self.freqtableIndex = 0
 
         moveCounter = 1
 
@@ -40,15 +35,12 @@ class MinMax(MoveStrategy):
         for move in board.currentPlayer.legalMoves:
             moveTransition = board.currentPlayer.makeMove(move)
             if moveTransition.moveStatus.isDone():
-                row = FreqTableRow(move)
-                self.freqtable.append(row)
                 if board.currentPlayer.alliance.isWhite():
                     currentValue = self.min(moveTransition.transitionBoard, self.depth-1)
                 else:
                     currentValue = self.max(moveTransition.transitionBoard, self.depth-1)
                 print(str(self) + " analysing move (" + str(moveCounter) + "/" + str(numMoves) + ") " + str(move) + " scores "
-                      + str(currentValue) + " " + str(row))
-                self.freqtableIndex += 1
+                      + str(currentValue) + " ")
                 if board.currentPlayer.alliance.isWhite() and currentValue >= highestSeenValue:
                     highestSeenValue = currentValue
                     bestMove = move
@@ -56,18 +48,14 @@ class MinMax(MoveStrategy):
                     lowestSeenValue = currentValue
                     bestMove = move
             moveCounter += 1
-        executionTime = time() - startTime
 
         return bestMove
 
     def min(self, board: Board.Board, depth: int) -> Union[float, int]:
-        if depth == 0:
-            self._boardsEvaluated += 1
-            self.freqtable[self.freqtableIndex].increment()
-            return self.boardEvaluator.evaluate(board, depth)
 
-        if self.isEndGameScenario(board):
-            return self.boardEvaluator.evaluate(board, depth)
+        if self.isEndGameScenario(board) or depth == 0:
+            eval = self.boardEvaluator.evaluate(board, depth)
+            return eval
 
         lowestSeenValue: float = float('inf')
 
@@ -80,13 +68,11 @@ class MinMax(MoveStrategy):
         return lowestSeenValue
 
     def max(self, board: Board.Board, depth: int) -> Union[float, int]:
-        if depth == 0:
-            self._boardsEvaluated += 1
-            self.freqtable[self.freqtableIndex].increment()
-            return self.boardEvaluator.evaluate(board, depth)
 
-        if self.isEndGameScenario(board):
-            return self.boardEvaluator.evaluate(board, depth)
+        if self.isEndGameScenario(board) or depth == 0:
+            eval = self.boardEvaluator.evaluate(board, depth)
+            return eval
+
         highestSeenValue: float = float('-inf')
         for move in board.currentPlayer.legalMoves:
             moveTransition: MoveTransition.MoveTransition = board.currentPlayer.makeMove(move)

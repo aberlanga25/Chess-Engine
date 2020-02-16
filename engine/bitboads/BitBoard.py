@@ -1,263 +1,204 @@
-def createStandardBoard() -> "BitBoard":
+import numpy as np
+from itertools import count
+import re
 
-    white_pawn_init_pos = 0x000000000000FF00
-    white_knight_init_pos = 0x0000000000000042
-    white_bishop_init_pos = 0x0000000000000024
-    white_rook_init_pos = 0x0000000000000081
-    white_queen_init_pos = 0x0000000000000010
-    white_king_init_pos = 0x0000000000000008
-    black_pawn_init_pos = 0x00FF000000000000
-    black_knight_init_pos = 0x4200000000000000
-    black_bishop_init_pos = 0x2400000000000000
-    black_rook_init_pos = 0x8100000000000000
-    black_queen_init_pos = 0x1000000000000000
-    black_king_init_pos = 0x0800000000000000
+from engine.bitboads.Searcher import Searcher
 
-    return BitBoard(white_pawn_init_pos, white_knight_init_pos, white_bishop_init_pos,
-                    white_rook_init_pos, white_queen_init_pos, white_king_init_pos,
-                    black_pawn_init_pos, black_knight_init_pos, black_bishop_init_pos,
-                    black_rook_init_pos, black_queen_init_pos, black_king_init_pos)
+A1, H1, A8, H8 = 91, 98, 21, 28
+initial = np.array(list("         \n"
+                    "         \n" 
+                    " rnbqkbnr\n"  
+                    " pppppppp\n" 
+                    " ........\n"  
+                    " ........\n"  
+                    " ........\n"
+                    " ........\n" 
+                    " PPPPPPPP\n" 
+                    " RNBQKBNR\n" 
+                    "         \n" 
+                    "         \n"), dtype=str)
+
+N, E, S, W = -10, 1, 10, -1
+
+pieces = {
+    'P': (N, N + N, N + W, N + E),
+    'N': (N + N + E, E + N + E, E + S + E, S + S + E, S + S + W, W + S + W, W + N + W, N + N + W),
+    'B': (N + E, S + E, S + W, N + W),
+    'R': (N, E, S, W),
+    'Q': (N, E, S, W, N + E, S + E, S + W, N + W),
+    'K': (N, E, S, W, N + E, S + E, S + W, N + W)
+}
+
+piece = {'P': 100, 'N': 320, 'B': 330, 'R': 500, 'Q': 900, 'K': 20000}
+pst = {
+    'P': (0,  0,  0,  0,  0,  0,  0,  0,
+        50, 50, 50, 50, 50, 50, 50, 50,
+        10, 10, 20, 30, 30, 20, 10, 10,
+         5,  5, 10, 25, 25, 10,  5,  5,
+         0,  0,  0, 20, 20,  0,  0,  0,
+         5, -5,-10,  0,  0,-10, -5,  5,
+         5, 10, 10,-20,-20, 10, 10,  5,
+         0,  0,  0,  0,  0,  0,  0,  0),
+    'N':(-50,-40,-30,-30,-30,-30,-40,-50,
+        -40,-20,  0,  0,  0,  0,-20,-40,
+        -30,  0, 10, 15, 15, 10,  0,-30,
+        -30,  5, 15, 20, 20, 15,  5,-30,
+        -30,  0, 15, 20, 20, 15,  0,-30,
+        -30,  5, 10, 15, 15, 10,  5,-30,
+        -40,-20,  0,  5,  5,  0,-20,-40,
+        -50,-40,-30,-30,-30,-30,-40,-50),
+    'B':(-20,-10,-10,-10,-10,-10,-10,-20,
+        -10,  0,  0,  0,  0,  0,  0,-10,
+        -10,  0,  5, 10, 10,  5,  0,-10,
+        -10,  5,  5, 10, 10,  5,  5,-10,
+        -10,  0, 10, 10, 10, 10,  0,-10,
+        -10, 10, 10, 10, 10, 10, 10,-10,
+        -10,  5,  0,  0,  0,  0,  5,-10,
+        -20,-10,-10,-10,-10,-10,-10,-20),
+    'R':(0,  0,  0,  0,  0,  0,  0,  0,
+         5, 10, 10, 10, 10, 10, 10,  5,
+         -5,  0,  0,  0,  0,  0,  0, -5,
+         -5,  0,  0,  0,  0,  0,  0, -5,
+         -5,  0,  0,  0,  0,  0,  0, -5,
+        -5,  0,  0,  0,  0,  0,  0, -5,
+         -5,  0,  0,  0,  0,  0,  0, -5,
+          0,  0,  0,  5,  5,  0,  0,  0),
+    'Q': (-20,-10,-10, -5, -5,-10,-10,-20,
+        -10,  0,  0,  0,  0,  0,  0,-10,
+        -10,  0,  5,  5,  5,  5,  0,-10,
+         -5,  0,  5,  5,  5,  5,  0, -5,
+          0,  0,  5,  5,  5,  5,  0, -5,
+        -10,  5,  5,  5,  5,  5,  0,-10,
+        -10,  0,  5,  0,  0,  0,  0,-10,
+        -20,-10,-10, -5, -5,-10,-10,-20),
+    'K':(-30,-40,-40,-50,-50,-40,-40,-30,
+        -30,-40,-40,-50,-50,-40,-40,-30,
+        -30,-40,-40,-50,-50,-40,-40,-30,
+        -30,-40,-40,-50,-50,-40,-40,-30,
+        -20,-30,-30,-40,-40,-30,-30,-20,
+        -10,-20,-20,-20,-20,-20,-20,-10,
+         20, 20,  0,  0,  0,  0, 20, 20,
+         20, 30, 10,  0,  0, 10, 30, 20)
+}
+
+for k, table in pst.items():
+    padrow = lambda row: (0,) + tuple(x+piece[k] for x in row) + (0,)
+    pst[k] = sum((padrow(table[i*8:i*8+8]) for i in range(8)), ())
+    pst[k] = (0,)*20 + pst[k] + (0,)*20
 
 
-class BitBoard:
+class Position:
 
-    whitePawns: int
-    whiteKnights: int
-    whiteBishops: int
-    whiteRooks: int
-    whiteQueen: int
-    whiteKing: int
+    def __init__(self, board, score, currentplayer, wc, bc, ep, kp):
+        super().__init__()
+        self.board = board
+        self.score = score
+        self.player = currentplayer
+        self.wc = wc
+        self.bc = bc
+        self.ep = ep
+        self.kp = kp
 
-    blackPawns: int
-    blackKnights: int
-    blackBishops: int
-    blackRooks: int
-    blackQueen: int
-    blackKing: int
-
-    whitePieces: int
-    blackPieces: int
-
-    white_pawn_init_pos = 0x000000000000FF00
-    black_pawn_init_pos = 0x00FF000000000000
-
-    all_tiles = 0xFFFFFFFFFFFFFFFF
-
-    bishop_diagonals = [-9, -7, 7, 9]
-
-    def __init__(self, whitePawns, whiteKnight, whiteBishops, whiteRook, whiteQueen, whiteKing,
-                 blackPawn, blackKnight, blackBishops, blackRook, blackQueen, blackKing):
-        self.blackKing = blackKing
-        self.blackQueen = blackQueen
-        self.blackRooks = blackRook
-        self.blackBishops = blackBishops
-        self.blackKnights = blackKnight
-        self.blackPawns = blackPawn
-        self.whiteKing = whiteKing
-        self.whiteQueen = whiteQueen
-        self.whiteRooks = whiteRook
-        self.whiteBishops = whiteBishops
-        self.whiteKnights = whiteKnight
-        self.whitePawns = whitePawns
-
-        self.whitePieces = self._calculateWhitePieces()
-        self.blackPieces = self._calculateBlackPieces()
-
-        self.knight_lookup_table = self.calculateKnightLookupTable()
-
-    def __str__(self):
-        return self._toBinaryString("BLACK KING", self.blackKing) \
-               + self._toBinaryString("BLACK QUEEN", self.blackQueen) \
-               + self._toBinaryString("BLACK ROOKS", self.blackRooks) \
-               + self._toBinaryString("BLACK BISHOPS", self.blackBishops) \
-               + self._toBinaryString("BLACK KNIGHTS", self.blackKnights) \
-               + self._toBinaryString("BLACK PAWNS", self.blackPawns) \
-               + self._toBinaryString("WHITE KING", self.whiteKing) \
-               + self._toBinaryString("WHITE QUEEN", self.whiteQueen) \
-               + self._toBinaryString("WHITE ROOKS", self.whiteRooks) \
-               + self._toBinaryString("WHITE BISHOP", self.whiteQueen) \
-               + self._toBinaryString("WHITE KNIGHTS", self.whiteKnights) \
-               + self._toBinaryString("WHITE PAWNS", self.whitePawns)
-
-    def calculateLegalMoves(self) -> "BitBoard":
-        return BitBoard(self._calculateWhitePawnLegals(), self._calculateWhiteKnightLegals(),
-                        self._calculateWhiteBishopLegals(), self._calculateWhiteRookLegals(),
-                        self._calculateWhiteQueenLegals(), self._calculateWhiteKingLegals(),
-                        self._calculateBlackPawnLegals(), self._calculateBlackKnightLegals(),
-                        self._calculateBlackBishopLegals(), self._calculateBlackRookLegals(),
-                        self._calculateBlackQueenLegals(), self._calculateBlackKingLegals())
-
-    def _calculateWhitePawnLegals(self) -> int:
-        allPieces: int = self.whitePieces & self.blackPieces
-        return (self.whitePawns << 8 & ~allPieces) | ((self.whitePawns & self.white_pawn_init_pos) << 16 & ~allPieces)
-
-    def _calculateBlackPawnLegals(self) -> int:
-        allPieces: int = self.whitePieces & self.blackPieces
-        return (self.blackPawns >> 8 & ~allPieces) | ((self.blackPawns & self.black_pawn_init_pos) >> 16 & ~allPieces)
-
-    def _calculateWhiteKnightLegals(self) -> int:
-        legals = 0
-        for position in self._bitPosition(self.whiteKnights):
-            legals |= self.knight_lookup_table[position] & ~self.whitePieces
-        return legals
-
-    def _calculateBlackKnightLegals(self) -> int:
-        legals = 0
-        for position in self._bitPosition(self.blackKnights):
-            legals |= self.knight_lookup_table[position] & ~self.blackPieces
-        return legals
-
-    def _calculateWhiteBishopLegals(self) -> int:
-        legals = 0
-        for position in self._bitPosition(self.whiteBishops):
-            candidate = position
-            for diagonal in self.bishop_diagonals:
-                candidate += diagonal
-                while 0 <= candidate < 64 and (candidate | self.whitePieces) == 0:
-                    legals |= candidate
-                    if candidate | self.blackPieces != 0:
+    def gen_moves(self):
+        test = []
+        for i, tile in enumerate(self.board):
+            if not checkAlliance(tile, self.player):
+                continue
+            for d in pieces[tile.upper()]:
+                for j in count(i+d, d):
+                    q = self.board[j]
+                    if self.player == 'b':
+                        tile = tile.upper()
+                    if q.isspace() or checkAlliance(q, self.player):
                         break
-                    candidate += diagonal
-        return legals
+                    if tile == 'P' and d in (N, N+N) and q != '.': break
+                    if tile == 'P' and d == N+N and (i < A1+N or self.board[i+N] != '.'): break
+                    if tile == 'P' and d in (N+W, N+E) and q == '.' \
+                            and j not in (self.ep, self.kp, self.kp-1, self.kp+1): break
+                    test.append((i, j))
+                    yield i, j
+                    if tile.upper() in 'PNK' or not checkAlliance(q, self.player): break
 
-    def _calculateBlackBishopLegals(self) -> int:
-        legals = 0
-        for position in self._bitPosition(self.blackBishops):
-            candidate = position
-            for diagonal in self.bishop_diagonals:
-                candidate += diagonal
-                while 0 <= candidate < 64 and (candidate | self.blackPieces) == 0:
-                    legals |= candidate
-                    if candidate | self.whitePieces != 0:
-                        break
-                    candidate += diagonal
-        return legals
+    def rotate(self):
+        return Position(np.flip(self.board), -self.score, self.player, self.bc, self.wc, 119-self.ep if self.ep else 0,
+            119-self.kp if self.kp else 0)
 
-    def _calculateWhiteRookLegals(self) -> int:
-        legals = 0
-        for position in self._bitPosition(self.whiteRooks):
-            legals |= position
-        return legals
+    def move(self, move):
+        i, j = move
+        p, q = self.board[i], self.board[j]
+        
+        board = self.board
 
-    def _calculateBlackRookLegals(self) -> int:
-        legals = 0
-        for position in self._bitPosition(self.blackRooks):
-            legals |= position
-        return legals
+        if self.player == 'b':
+            p = p.upper()
 
-    def _calculateWhiteQueenLegals(self) -> int:
-        legals = 0
-        for position in self._bitPosition(self.whiteQueen):
-            legals |= position
-        return legals
+        wc, bc, ep, kp = self.wc, self.bc, 0, 0,
 
-    def _calculateBlackQueenLegals(self) -> int:
-        legals = 0
-        for position in self._bitPosition(self.blackQueen):
-            legals |= position
-        return legals
+        score = self.score + self.value(move)
+        board[j] = board[i]
+        board[i] = '.'
 
-    def _calculateWhiteKingLegals(self) -> int:
-        legals = 0
-        for position in self._bitPosition(self.whiteKing):
-            legals |= position
-        return legals
+        if i == A1: wc = (False, wc[1])
+        if i == H1: wc = (wc[0], False)
+        if j == A8: bc = (bc[0], False)
+        if j == H8: bc = (False, bc[1])
 
-    def _calculateBlackKingLegals(self) -> int:
-        legals = 0
-        for position in self._bitPosition(self.blackKing):
-            legals |= position
-        return legals
+        if p == 'P':
+            if A8 <= j <= H8:
+                board[j] = 'Q'
+            if j - i == 2 * N:
+                ep = i + N
+            if j == self.ep:
+                board[j + S] = '.'
 
-    def _calculateWhitePieces(self) -> int:
-        return self.whitePawns | self.whiteKnights | self.whiteBishops | self.whiteRooks \
-               | self.whiteQueen | self.whiteKing
+        pos = Position(board, score, 'b' if self.player == 'w' else 'w', wc, bc, ep, kp)
+        return pos.rotate()
 
-    def _calculateBlackPieces(self) -> int:
-        return self.blackPawns | self.blackKnights | self.blackBishops | self.blackRooks \
-               | self.blackQueen | self.blackKing
+    def value(self, move):
+        i, j = move
+        p, q = self.board[i], self.board[j]
 
-    @staticmethod
-    def _bitPosition(n: int) -> list:
-        result = []
-        i, bit = 0, 0
-        while n != 0:
-            if n & 1 != 0:
-                result.append(bit)
-            n = n >> 1
-            bit += 1
-        return result
+        if self.player == 'b':
+            p = p.upper()
 
-    @staticmethod
-    def _toBinaryString(title: str, bits: int) -> str:
-        s = "0" * 64
-        s = int(s)
-        print(s)
-        s |= int("{0:b}".format(bits))
-        builder = title + "\n"
-        i = 1
-        s = str(s)
-        for c in s:
-            builder += c
-            if i % 8 == 0:
-                builder += "\n"
-            i += 1
-        builder += "\n"
-        return builder
+        score = pst[p][j] - pst[p][i]
 
-    @staticmethod
-    def calculateKnightLookupTable() -> list:
+        if q.islower():
+            score += pst[q.upper()][119-j]
 
-        knightLookupTable = [1 << 10 | 1 << 17, 1 << 11 | 1 << 16 | 1 << 18, 1 << 8 | 1 << 12 | 1 << 17 | 1 << 19,
-                             1 << 9 | 1 << 13 | 1 << 18 | 1 << 20, 1 << 10 | 1 << 14 | 1 << 19 | 1 << 21,
-                             1 << 11 | 1 << 15 | 1 << 20 | 1 << 22, 1 << 12 | 1 << 21 | 1 << 23, 1 << 13 | 1 << 22,
-                             1 << 2 | 1 << 18 | 1 << 25, 1 << 3 | 1 << 19 | 1 << 24 | 1 << 26,
-                             1 | 1 << 4 | 1 << 16 | 1 << 20 | 1 << 25 | 1 << 27,
-                             1 << 1 | 1 << 5 | 1 << 17 | 1 << 21 | 1 << 26 | 1 << 28,
-                             1 << 2 | 1 << 6 | 1 << 18 | 1 << 22 | 1 << 27 | 1 << 29,
-                             1 << 3 | 1 << 7 | 1 << 19 | 1 << 23 | 1 << 28 | 1 << 30,
-                             1 << 4 | 1 << 20 | 1 << 29 | 1 << 31, 1 << 5 | 1 << 21 | 1 << 30,
-                             1 << 1 | 1 << 10 | 1 << 26 | 1 << 33, 1 | 1 << 2 | 1 << 11 | 1 << 27 | 1 << 32 | 1 << 34,
-                             1 << 1 | 1 << 3 | 1 << 8 | 1 << 12 | 1 << 24 | 1 << 28 | 1 << 33 | 1 << 35,
-                             1 << 2 | 1 << 4 | 1 << 9 | 1 << 13 | 1 << 25 | 1 << 29 | 1 << 34 | 1 << 36,
-                             1 << 3 | 1 << 5 | 1 << 10 | 1 << 14 | 1 << 26 | 1 << 30 | 1 << 35 | 1 << 37,
-                             1 << 4 | 1 << 6 | 1 << 11 | 1 << 15 | 1 << 27 | 1 << 31 | 1 << 36 | 1 << 38,
-                             1 << 5 | 1 << 7 | 1 << 12 | 1 << 28 | 1 << 37 | 1 << 39,
-                             1 << 6 | 1 << 13 | 1 << 29 | 1 << 38, 1 << 9 | 1 << 18 | 1 << 34 | 1 << 41,
-                             1 << 8 | 1 << 10 | 1 << 19 | 1 << 35 | 1 << 40 | 1 << 42,
-                             1 << 9 | 1 << 11 | 1 << 16 | 1 << 20 | 1 << 32 | 1 << 36 | 1 << 41 | 1 << 43,
-                             1 << 10 | 1 << 12 | 1 << 17 | 1 << 21 | 1 << 33 | 1 << 37 | 1 << 42 | 1 << 44,
-                             1 << 11 | 1 << 13 | 1 << 18 | 1 << 22 | 1 << 34 | 1 << 38 | 1 << 43 | 1 << 45,
-                             1 << 12 | 1 << 14 | 1 << 19 | 1 << 23 | 1 << 35 | 1 << 39 | 1 << 44 | 1 << 46,
-                             1 << 13 | 1 << 15 | 1 << 20 | 1 << 36 | 1 << 45 | 1 << 47,
-                             1 << 14 | 1 << 21 | 1 << 37 | 1 << 46, 1 << 17 | 1 << 26 | 1 << 42 | 1 << 49,
-                             1 << 16 | 1 << 18 | 1 << 27 | 1 << 43 | 1 << 48 | 1 << 50,
-                             1 << 17 | 1 << 19 | 1 << 24 | 1 << 28 | 1 << 40 | 1 << 44 | 1 << 49 | 1 << 51,
-                             1 << 18 | 1 << 20 | 1 << 25 | 1 << 29 | 1 << 41 | 1 << 45 | 1 << 50 | 1 << 52,
-                             1 << 19 | 1 << 21 | 1 << 26 | 1 << 30 | 1 << 42 | 1 << 46 | 1 << 51 | 1 << 53,
-                             1 << 20 | 1 << 22 | 1 << 27 | 1 << 31 | 1 << 43 | 1 << 47 | 1 << 52 | 1 << 54,
-                             1 << 21 | 1 << 23 | 1 << 28 | 1 << 44 | 1 << 53 | 1 << 55,
-                             1 << 22 | 1 << 29 | 1 << 45 | 1 << 54, 1 << 25 | 1 << 34 | 1 << 50 | 1 << 57,
-                             1 << 24 | 1 << 26 | 1 << 35 | 1 << 51 | 1 << 56 | 1 << 58,
-                             1 << 25 | 1 << 27 | 1 << 32 | 1 << 36 | 1 << 48 | 1 << 52 | 1 << 57 | 1 << 59,
-                             1 << 26 | 1 << 28 | 1 << 33 | 1 << 37 | 1 << 49 | 1 << 53 | 1 << 58 | 1 << 60,
-                             1 << 27 | 1 << 29 | 1 << 34 | 1 << 38 | 1 << 50 | 1 << 54 | 1 << 59 | 1 << 61,
-                             1 << 28 | 1 << 30 | 1 << 35 | 1 << 39 | 1 << 51 | 1 << 55 | 1 << 60 | 1 << 62,
-                             1 << 29 | 1 << 31 | 1 << 36 | 1 << 52 | 1 << 61 | 1 << 63,
-                             1 << 30 | 1 << 37 | 1 << 53 | 1 << 62, 1 << 33 | 1 << 42 | 1 << 58,
-                             1 << 32 | 1 << 34 | 1 << 43 | 1 << 59,
-                             1 << 33 | 1 << 35 | 1 << 40 | 1 << 44 | 1 << 56 | 1 << 60,
-                             1 << 34 | 1 << 36 | 1 << 41 | 1 << 45 | 1 << 57 | 1 << 61,
-                             1 << 35 | 1 << 37 | 1 << 42 | 1 << 46 | 1 << 58 | 1 << 62,
-                             1 << 36 | 1 << 38 | 1 << 43 | 1 << 47 | 1 << 59 | 1 << 63,
-                             1 << 37 | 1 << 39 | 1 << 44 | 1 << 60, 1 << 38 | 1 << 45 | 1 << 61, 1 << 41 | 1 << 51,
-                             1 << 40 | 1 << 42 | 1 << 52, 1 << 41 | 1 << 43 | 1 << 53,
-                             1 << 42 | 1 << 44 | 1 << 47 | 1 << 54, 1 << 43 | 1 << 45 | 1 << 49 | 1 << 55,
-                             1 << 44 | 1 << 46 | 1 << 50 | 1 << 55, 1 << 45 | 1 << 47 | 1 << 51, 1 << 46 | 1 << 53]
+        return score
 
-        return knightLookupTable
+def checkAlliance(tile: str, player: str) -> bool:
+    if tile.isupper() and player == "w":
+        return True
+    elif tile.islower() and player == "b":
+        return True
+    return False
+
+def print_pos(pos):
+    print()
+    uni_pieces = {'R':'♜', 'N':'♞', 'B':'♝', 'Q':'♛', 'K':'♚', 'P':'♟',
+                  'r':'♖', 'n':'♘', 'b':'♗', 'q':'♕', 'k':'♔', 'p':'♙', '.':'·'}
+    for i, row in enumerate(np.split(pos.board, 12)):
+        print(' ', 12-i, ' '.join(uni_pieces.get(p, p) for p in row))
+    print('    a b c d e f g h \n\n')
 
 
-if __name__ == '__main__':
-    v2 = createStandardBoard().calculateLegalMoves()
-    print(v2)
+def parse(c):
+    fil, rank = ord(c[0]) - ord('a'), int(c[1]) - 1
+    return A1 + fil - 10*rank
+
+
+if __name__ == "__main__":
+    p = Position(initial, 0, 'w', (True, True), (True, True), 0, 0)
+
+    print_pos(p)
+    match = re.match('([a-h][1-8])' * 2, input('Your move: '))
+    if match:
+        move = parse(match.group(1)), parse(match.group(2))
+    new = p.move(move)
+    new.rotate()
+    print_pos(new)
+    searcher = Searcher()
+    n = new.move(searcher.execute(new, 4, True))
+    print_pos(n)
