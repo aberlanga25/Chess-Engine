@@ -3,13 +3,10 @@ from engine.classic.board import Board
 from engine.classic.player import Player
 from engine.classic.piece import Piece
 
-import random
-
 
 class StandardBoardEvaluator(BoardEvaluator):
 
     def evaluate(self, board: Board.Board, depth: int) -> int:
-        #return random.randrange(-100, 100)
         return self.scorePlayer(board.whitePlayer, depth) - self.scorePlayer(board.blackPlayer, depth)
 
     def scorePlayer(self, player: Player.Player, depth: int) -> int:
@@ -17,7 +14,6 @@ class StandardBoardEvaluator(BoardEvaluator):
 
     @staticmethod
     def mobility(player: Player.Player) -> int:
-        #print("Mobility: " + str(int((len(player.legalMoves) * 100) / len(player.getOpponent.legalMoves)) * 2))
         return int((len(player.legalMoves) * 100) / len(player.getOpponent.legalMoves)) * 2
 
     @staticmethod
@@ -29,7 +25,6 @@ class StandardBoardEvaluator(BoardEvaluator):
                 attackedPiece: Piece.Piece = move.attackedPiece
                 if movedPiece.pieceType.pieceValue() <= attackedPiece.pieceType.pieceValue():
                     attackScore += 1
-        #print("Attack "+str(attackScore*2))
         return attackScore * 2
 
     @staticmethod
@@ -40,7 +35,6 @@ class StandardBoardEvaluator(BoardEvaluator):
             pieceValueScore += piece.pieceType.pieceValue()
             if piece.pieceType.isBishop():
                 numBishops += 1
-        #print("Piece Value " + str(pieceValueScore + (50 if numBishops == 2 else 0)))
         return pieceValueScore + (50 if numBishops == 2 else 0)
 
     @staticmethod
@@ -48,7 +42,6 @@ class StandardBoardEvaluator(BoardEvaluator):
         return 20 if player.getOpponent.isInCheck else 0
 
     def checkMate(self, player: Player.Player, depth: int) -> int:
-        #print("CheckMate "+ str(100000 * self.depthBonus(depth) if player.getOpponent.isInCheckMate else 0))
         return 100000 * self.depthBonus(depth) if player.getOpponent.isInCheckMate else 0
 
     @staticmethod

@@ -35,7 +35,6 @@ class AlphaBeta(MoveStrategy):
         moveCounter = 1
 
         print(str(board.currentPlayer) + " THINKING with depth = " + str(self.depth))
-        numMoves = len(board.currentPlayer.legalMoves)
         unsorted = board.currentPlayer.legalMoves
         for move in self.moveSorter.sort(unsorted):
             moveTransition = board.currentPlayer.makeMove(move)

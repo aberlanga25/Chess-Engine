@@ -1,6 +1,5 @@
 from typing import *
 
-import numpy as np
 
 from engine.classic.player.Alliance import Alliance
 from engine.classic.player.BlackPlayer import BlackPlayer

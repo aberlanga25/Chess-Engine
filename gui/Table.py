@@ -1,10 +1,11 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import Qt, pyqtSignal, QRect
+from PyQt5.QtCore import Qt, pyqtSignal, QRect, QThread
 
 from engine.classic.board.BoardUtils import *
 from engine.classic.board import Board
 from engine.classic.board.Move import MoveFactory
+from engine.classic.player.ai.AlphaBeta import AlphaBeta
 
 from pgn.FenUtils import createGameFromFen, createFENFromGame
 
@@ -79,8 +80,6 @@ class Table(QMainWindow):
             chessBrd = createGameFromFen(text)
             self.boardPanel.drawBoard(chessBrd)
 
-    def _createFEN(self):
-        text = createFENFromGame(self.boardPanel.b)
 
     def _flipBoard(self):
         global _boardDirection
@@ -155,6 +154,8 @@ class Table(QMainWindow):
             self.boardPanel = boardPanel
             self.tileId = tileId
 
+            self.ai = Table.AIThinkTank()
+
             self.assignColor()
             self.grid = QGridLayout(self)
             self.grid.setContentsMargins(0, 0, 0, 0)
@@ -187,8 +188,8 @@ class Table(QMainWindow):
             self.label = QLabel(self)
             self.label.resize(self.width(), self.height())
             if board.tile(self.tileId).isTileOccupied():
-                self.label.setPixmap(QPixmap("img/"+board.tile(self.tileId).pieceOnTile.pieceAlliance.value +
-                                   str(board.tile(self.tileId).pieceOnTile)+".png"))
+                self.label.setPixmap(QPixmap("img/" + board.tile(self.tileId).pieceOnTile.pieceAlliance.value +
+                                             str(board.tile(self.tileId).pieceOnTile) + ".png"))
             else:
                 self.label.setText("")
 
@@ -203,6 +204,10 @@ class Table(QMainWindow):
             if Table.humanPiece is not None and Table.humanPiece.pieceAlliance == board.currentPlayer.alliance:
                 return Table.humanPiece.calculateLegalMoves(board)
             return []
+
+        def aiRunner(self):
+            self.ai.run()
+            self.clicked.emit()
 
         def mousePressEvent(self, e):
             global _chessboard
@@ -226,10 +231,33 @@ class Table(QMainWindow):
                         _chessboard = transition.transitionBoard
                         global _moveLog
                         _moveLog.addMove(move)
+                        self.ai.run()
                     Table.destinationTile = None
                     Table.sourceTile = None
                     Table.humanPiece = None
             self.clicked.emit()
+
+    class AIThinkTank(QThread):
+
+        def run(self) -> None:
+            global _chessboard
+            if _chessboard.currentPlayer.alliance.isBlack() and \
+                    not _chessboard.currentPlayer.isInCheckMate and \
+                    not _chessboard.currentPlayer.isInStaleMate:
+                miniMax = AlphaBeta(3, 3)
+                bestMove = miniMax.execute(_chessboard)
+                transition = _chessboard.currentPlayer.makeMove(bestMove)
+                if transition.moveStatus.isDone():
+                    _chessboard = transition.transitionBoard
+                    global _moveLog
+                    _moveLog.addMove(bestMove)
+
+                if _chessboard.currentPlayer.isInCheckMate:
+                    print("Game Over ", str(_chessboard.currentPlayer), " is in checkmate!")
+
+                if _chessboard.currentPlayer.isInStaleMate:
+                    print("Game Over ", str(_chessboard.currentPlayer), " is in stalemate!")
+
 
 
 _moveLog: Table.MoveLog
